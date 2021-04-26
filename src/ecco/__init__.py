@@ -24,7 +24,8 @@ def from_pretrained(hf_model_id: str,
                     hidden_states: Optional[bool] = True,
                     activations_layer_nums: Optional[List[int]] = None,
                     verbose: Optional[bool] = True,
-                    gpu: Optional[bool] = True
+                    gpu: Optional[bool] = True,
+                    causal_lm: Optional[bool] = False
                     ):
     """
 Constructs a [LM][ecco.lm.LM] object based on a string identifier from HuggingFace Transformers. This is main entry point to Ecco.
@@ -48,13 +49,15 @@ Args:
 """
     # TODO: Should specify task/head in a cleaner way. Allow masked LM. T5 generation.
     # Likely use model-config. Have a default. Allow user to specify head?
-    if 'gpt2' not in hf_model_id:
-        tokenizer = AutoTokenizer.from_pretrained(hf_model_id)
+    if 'gpt2' in hf_model_id: causal_lm = True 
+
+    tokenizer = AutoTokenizer.from_pretrained(hf_model_id)
+    
+    if not causal_lm:
         model = AutoModel.from_pretrained(hf_model_id,
-                                                     output_hidden_states=hidden_states,
-                                                     output_attentions=attention)
+                                            output_hidden_states=hidden_states,
+                                            output_attentions=attention)
     else:
-        tokenizer = AutoTokenizer.from_pretrained(hf_model_id)
         model = AutoModelForCausalLM.from_pretrained(hf_model_id,
                                                      output_hidden_states=hidden_states,
                                                      output_attentions=attention)
